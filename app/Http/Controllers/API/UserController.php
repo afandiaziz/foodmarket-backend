@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Actions\Fortify\PasswordValidationRules;
 use App\Helpers\ResponseFormatter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -49,6 +50,7 @@ class UserController extends Controller
             ], 'Authentication Failed', 500);
         }
     }
+
     public function register(Request $request)
     {
         try {
@@ -82,5 +84,11 @@ class UserController extends Controller
                 'error' => $error,
             ], 'Authentication Failed', 500);
         }
+    }
+
+    public function logout(Request $request)
+    {
+        $token = $request->user()->currentAccessToken()->delete();
+        return ResponseFormatter::success($token, 'Token Revoked');
     }
 }
