@@ -97,4 +97,9 @@ class UserController extends Controller
         $user = Auth::user()->update($request->all());
         return ResponseFormatter::success($user, 'Profile Updated');
     }
+
+    public function fetch(Request $request)
+    {
+        return ResponseFormatter::success($request->user(), 'Data profile user berhasil diambil');
+    }
 }
