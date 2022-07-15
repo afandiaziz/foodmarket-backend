@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    use PasswordValidationRules;
 
     public function login(Request $request)
     {
@@ -34,7 +35,7 @@ class UserController extends Controller
                 throw new \Exception("Invalid Crendetials");
             }
 
-            $token = $user->createToken()->plainTextToken;
+            $token = $user->createToken('authToken')->plainTextToken;
 
             return ResponseFormatter::success([
                 'access_token' => $token,
@@ -45,6 +46,40 @@ class UserController extends Controller
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $e
+            ], 'Authentication Failed', 500);
+        }
+    }
+    public function register(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'password' => $this->passwordRules()
+            ]);
+
+            User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'address' => $request->address,
+                'houseNumber' => $request->houseNumber,
+                'phoneNumber' => $request->phoneNumber,
+                'city' => $request->city,
+                'password' => Hash::make($request->password),
+            ]);
+
+            $user = User::where('email', $request->email)->first();
+
+            $token = $user->createToken('authToken')->plainTextToken;
+            return ResponseFormatter::success([
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user
+            ], 'User Registered');
+        } catch (Exception $error) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $error,
             ], 'Authentication Failed', 500);
         }
     }
