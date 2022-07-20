@@ -19,10 +19,17 @@ class UserController extends Controller
     public function login(Request $request)
     {
         try {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'email' => 'required|email',
                 'password' => 'required',
             ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error([
+                    'message' => 'Something went wrong',
+                    'error' => $validator->errors(),
+                ], 'Login Failed', 422);
+            }
 
             $credentials = request(['email', 'password']);
 
@@ -49,18 +56,25 @@ class UserController extends Controller
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $e
-            ], 'Authentication Failed', 500);
+            ], 'Authentication Failed', 422);
         }
     }
 
     public function register(Request $request)
     {
         try {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'password' => $this->passwordRules()
             ]);
+
+            if ($validator->fails()) {
+                return ResponseFormatter::error([
+                    'message' => 'Something went wrong',
+                    'error' => $validator->errors(),
+                ], 'Register Failed', 422);
+            }
 
             User::create([
                 'name' => $request->name,
@@ -84,7 +98,7 @@ class UserController extends Controller
             return ResponseFormatter::error([
                 'message' => 'Something went wrong',
                 'error' => $error,
-            ], 'Authentication Failed', 500);
+            ], 'Authentication Failed', 422);
         }
     }
 
