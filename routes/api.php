@@ -16,15 +16,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::resource('food', FoodController::class)->only([
+        'store', 'destroy'
+    ]);
+    Route::post('food/{id}', [FoodController::class, 'update']);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'fetch']);
     Route::post('user', [UserController::class, 'updateProfile']);
     Route::post('user/photo', [UserController::class, 'updatePhoto']);
 
-    Route::resource('food', FoodController::class)->only([
-        'store', 'destroy'
-    ]);
-    Route::post('food/{id}', [FoodController::class, 'update']);
 
     Route::get('transaction', [TransactionController::class, 'all']);
     Route::post('transaction/{id}', [TransactionController::class, 'update']);
