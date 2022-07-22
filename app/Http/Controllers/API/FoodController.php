@@ -6,10 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Food;
 use App\Helpers\ResponseFormatter;
+use Illuminate\Support\Facades\Validator;
 
 class FoodController extends Controller
 {
-    public function all(Request $request)
+    public function index(Request $request)
     {
         $id = $request->input('id');
         $limit = $request->input('limit', 6);
@@ -64,5 +65,54 @@ class FoodController extends Controller
             $food->paginate($limit),
             'Data list produk berhasil diambil'
         );
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'picturePath' => 'required|image',
+            'description' => 'required',
+            'ingredients' => 'required',
+            'price' => 'required|integer',
+            'rate' => 'required|integer',
+            'types' => '',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $validator->errors(),
+            ], 'Create Food Failed', 422);
+        }
+
+        $data = $request->all();
+        $data['picturePath'] = $request->file('picturePath')->store('assets/food', 'public');
+        $food = Food::create($data);
+
+        return ResponseFormatter::success([
+            'food' => $food
+        ], 'Food Created');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $food = Food::where('id', $id);
+        $data = $request->all();
+        if ($request->file('picturePath')) {
+            $data['picturePath'] = $request->file('picturePath')->store('assets/food', 'public');
+        }
+
+        $food->update($data);
+
+        return ResponseFormatter::success([
+            'food' => $food->first()
+        ], 'Food Updated');
+    }
+
+    public function destroy(Food $food)
+    {
+        $food->delete();
+        return ResponseFormatter::success(null, 'Food Deleted');
     }
 }

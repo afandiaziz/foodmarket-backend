@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\API\FoodController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Http\Request;
@@ -22,6 +21,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('user', [UserController::class, 'updateProfile']);
     Route::post('user/photo', [UserController::class, 'updatePhoto']);
 
+    Route::resource('food', FoodController::class)->only([
+        'store', 'destroy'
+    ]);
+    Route::post('food/{id}', [FoodController::class, 'update']);
+
     Route::get('transaction', [TransactionController::class, 'all']);
     Route::post('transaction/{id}', [TransactionController::class, 'update']);
 
@@ -31,4 +35,4 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'register']);
 
-Route::get('food', [FoodController::class, 'all']);
+Route::get('food', [FoodController::class, 'index']);
