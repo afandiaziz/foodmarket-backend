@@ -82,6 +82,7 @@ class UserController extends Controller
                 'address' => $request->address,
                 'houseNumber' => $request->houseNumber,
                 'phoneNumber' => $request->phoneNumber,
+                'province' => $request->province,
                 'city' => $request->city,
                 'password' => Hash::make($request->password),
             ]);
@@ -110,8 +111,19 @@ class UserController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = Auth::user()->update($request->all());
-        return ResponseFormatter::success($user, 'Profile Updated');
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error([
+                'message' => 'Something went wrong',
+                'error' => $validator->errors(),
+            ], 'Update Profile Failed', 422);
+        }
+
+        Auth::user()->update($request->all());
+        return ResponseFormatter::success(Auth::user(), 'Profile Updated');
     }
 
     public function fetch(Request $request)
